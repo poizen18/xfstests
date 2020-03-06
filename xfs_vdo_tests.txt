@@ -1,0 +1,135 @@
+## xfs-tests on xfs + vdo 
+
+1. First clone the tree
+
+~~~
+#  mkdir ~/devel ; cd ~/devel 
+#  git clone git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git
+~~~
+
+and also if you do not have xfsprogs headers installed on your distro already you can build it yourself
+
+~~~
+#  git clone git://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git
+#  cd xfsprogs-dev
+#  make -j4 
+#  sudo make install 
+#  cd ../xfstests-dev
+#  make -j4 
+#  sudo make install 
+~~~
+
+2. The installation if succeeded, you should goto the directory : 
+
+~~~
+#  cd /var/lib/xfstests
+#  ls
+check  common  ltp  randomize.awk  src  tests
+~~~
+
+3. Prepare for business. 
+   create two disks with the names test and scratch, mount them at /mnt/test and /mnt/scratch respectively. 
+
+~~~
+   #  sudo vdo create --name test --device /dev/sdb --deduplication enabled --compression enabled --vdoLogicalSize 40G --verbose
+   #  sudo vdo create --name scratch --device /dev/sdc --deduplication enabled --compression enabled --vdoLogicalSize 40G --verbose
+~~~
+
+4. Add the entries to /etc/fstab
+
+~~~
+/dev/mapper/test                /mnt/test       xfs     defaults 0 0
+/dev/mapper/scratch             /mnt/scratch    xfs     defaults 0 0
+~~~
+
+5. Mount it : 
+
+# mount /mnt/test -v 
+# mount /mnt/scratch -v 
+
+6. Check if it is successfully mounted : 
+
+~~~
+[poizen@fedora xfstests]$ df -t xfs  | grep mnt
+/dev/mapper/test      41922560  325380   41597180   1% /mnt/test
+/dev/mapper/scratch   41922560  325380   41597180   1% /mnt/scratch
+~~~
+
+7. Prepare for a configuration file: 
+
+~~~
+[poizen@fedora xfstests]$ cat local.config
+export TEST_DEV=/dev/mapper/test
+export TEST_DIR=/mnt/test
+export SCRATCH_DEV=/dev/mapper/scratch
+export SCRATCH_MNT=/mnt/scratch
+~~~
+
+That's all you need folks!
+
+8. Test if its working fine: 
+
+~~~
+# ./check xfs/001
+FSTYP         -- xfs (non-debug)
+PLATFORM      -- Linux/x86_64 fedora 5.6.0-0.rc4.git0.1.vanilla.knurd.2.fc31.x86_64 #1 SMP Tue Mar 3 08:58:01 UTC 2020
+MKFS_OPTIONS  -- -f -bsize=4096 /dev/mapper/scratch
+MOUNT_OPTIONS -- -o context=system_u:object_r:root_t:s0 /dev/mapper/scratch /mnt/scratch
+
+xfs/001  48s
+Ran: xfs/001
+Passed all 1 tests
+~~~
+
+9. Running tests:
+
+    - cd xfstests
+    - By default the tests suite will run all the tests in the auto group. These
+      are the tests that are expected to function correctly as regression tests,
+      and it excludes tests that exercise conditions known to cause machine
+      failures (i.e. the "dangerous" tests).
+    - ./check '*/001' '*/002' '*/003'
+    - ./check '*/06?'
+    - Groups of tests maybe ran by: ./check -g [group(s)]
+      See the 'group' file for details on groups
+    - If you want to run all tests regardless of what group they are in
+      (including dangerous tests), use the "all" group: ./check -g all
+    - To randomize test order: ./check -r [test(s)]
+    - You can explicitly specify NFS/CIFS/OVERLAY, otherwise
+      the filesystem type will be autodetected from $TEST_DEV:
+        - for running nfs tests: ./check -nfs [test(s)]
+        - for running cifs/smb3 tests: ./check -cifs [test(s)]
+        - for overlay tests: ./check -overlay [test(s)]
+          The TEST and SCRATCH partitions should be pre-formatted
+          with another base fs, where the overlay dirs will be created
+
+
+    The check script tests the return value of each script, and
+    compares the output against the expected output. If the output
+    is not as expected, a diff will be output and an .out.bad file
+    will be produced for the failing test.
+
+    Unexpected console messages, crashes and hangs may be considered
+    to be failures but are not necessarily detected by the QA system.
+
+examples:
+ check xfs/001
+ check -g quick
+ check -g xfs/quick
+ check -x stress xfs/*
+ check -X .exclude -g auto
+ check -E ~/.xfstests.exclude
+
+10. Let the testing commence!
+
+~~~
+$ sudo ./check -g quick
+FSTYP         -- xfs (non-debug)
+PLATFORM      -- Linux/x86_64 fedora 5.6.0-0.rc4.git0.1.vanilla.knurd.2.fc31.x86_64 #1 SMP Tue Mar 3 08:58:01 UTC 2020
+MKFS_OPTIONS  -- -f -bsize=4096 /dev/mapper/scratch
+MOUNT_OPTIONS -- -o context=system_u:object_r:root_t:s0 /dev/mapper/scratch /mnt/scratch
+
+generic/001 7s ...  6s
+generic/002      1s
+generic/003
+~~~
