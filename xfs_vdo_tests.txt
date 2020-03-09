@@ -20,6 +20,7 @@ and also if you do not have xfsprogs headers installed on your distro already yo
 #  cd xfsprogs-dev
 #  make -j4 
 #  sudo make install 
+#  sudo make install-dev
 #  cd ../xfstests-dev
 #  make -j4 
 #  sudo make install 
