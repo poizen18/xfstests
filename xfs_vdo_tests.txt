@@ -1,5 +1,11 @@
 ## xfs-tests on xfs + vdo 
 
+0. Install the necessary packages on fedora. 
+
+~~~
+# dnf -y install libuuid-devel libtool libblkid-devel git vim 
+~~~
+
 1. First clone the tree
 
 ~~~
