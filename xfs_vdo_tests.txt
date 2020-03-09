@@ -3,7 +3,7 @@
 0. Install the necessary packages on fedora. 
 
 ~~~
-# dnf -y install libuuid-devel libtool libblkid-devel git vim 
+# dnf -y install libuuid-devel libtool libblkid-devel git vim gettext-devel
 ~~~
 
 1. First clone the tree
@@ -11,6 +11,7 @@
 ~~~
 #  mkdir ~/devel ; cd ~/devel 
 #  git clone git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git
+#  git clone https://git.savannah.nongnu.org/git/attr.git
 ~~~
 
 and also if you do not have xfsprogs headers installed on your distro already you can build it yourself
