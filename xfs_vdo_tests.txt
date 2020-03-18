@@ -30,6 +30,7 @@ and also if you do not have xfsprogs headers installed on your distro already yo
 2. The installation if succeeded, you should goto the directory : 
 
 ~~~
+#  useradd fsgqa
 #  cd /var/lib/xfstests
 #  ls
 check  common  ltp  randomize.awk  src  tests
