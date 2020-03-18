@@ -2,8 +2,8 @@
 
 0. Install the necessary packages on fedora. 
 
-~~~
-# dnf -y install libuuid-devel libtool libblkid-devel git vim gettext-devel xfsprogs-devel libattr-devel libacl-devel 
+~~~ 
+# dnf -y install libuuid-devel libtool libblkid-devel git vim gettext-devel xfsprogs-devel libattr-devel libacl-devel libaio-devel
 ~~~
 
 1. First clone the tree
